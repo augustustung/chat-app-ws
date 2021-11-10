@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sieu cap vjp props</title>
+
+  <style>
+    .up {
+      color: green;
+      font-weight: bold;
+    }
+
+    .down {
+      color: red;
+      font-weight: bold;
+    }
+
+    .form {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+    <h1>Hoi sieu cap vjp props</h1>
+    <ul id="messages"></ul>
+    <form id="chat-form" class="form">
+      <input id="chat-message" type="text"/>
+      <button id="send-message">Gửi</button>
+    </form>
+    <span id="bitcoin-price"></span>
+</body>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket  = io();
+  const name = prompt("Tên bạn là gì?");
+  const chatForm = document.querySelector("#chat-form");
+  const chatMes = document.querySelector('#chat-message');
+  let lastPrice = 0;
+  chatForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const message = chatMes.value;
+
+    socket.emit('on-chat', { message: message, name: name });
+    chatMes.value = '';
+  })
+
+  const messages = document.querySelector("#messages");
+  socket.on('user-chat', (message) => {
+     const chatItem = document.createElement('li');
+     chatItem.textContent = `${message.name}: ${message.message}`;
+     messages.appendChild(chatItem);
+  })
+
+  const priceBitcoin = document.querySelector('#bitcoin-price');
+  socket.on('bitcoin-price', (data) => {
+    if(data.price > lastPrice) {
+      priceBitcoin.className="up";
+    } else {
+      priceBitcoin.className="down";
+    }
+    lastPrice = data.price;
+    priceBitcoin.textContent = `${data.price} USD`;
+  })
+</script>
+</html>
